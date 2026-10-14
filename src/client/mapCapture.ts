@@ -4,7 +4,7 @@
  * the robot asks it for its current frame (read in the moment it renders) and lays it over the map as an image until
  * the screenshot is taken. A registered map also tells the robot the place under its hand (lat, lng, zoom).
  *
- *   import { registerMapForCapture } from '@placeintelligence/feedback-robot';
+ *   import { registerMapForCapture } from '@obsidiandeep/feedback-robot';
  *   map.on('load', () => registerMapForCapture(map)); // returns a function that unregisters it
  */
 export interface CapturableMap {

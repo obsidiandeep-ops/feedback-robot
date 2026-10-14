@@ -1,7 +1,7 @@
 /**
  * The handler for Node's own servers: Express, Connect, Vite's dev server, or plain `http`.
  *
- *   import { feedbackRobotMiddleware } from '@placeintelligence/feedback-robot/node';
+ *   import { feedbackRobotMiddleware } from '@obsidiandeep/feedback-robot/node';
  *   app.use(feedbackRobotMiddleware());   // Express: before any body parser, or after it (it reads req.body then)
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';

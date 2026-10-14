@@ -11,7 +11,7 @@ write what should change, and send. The message lands in your **Claude Code** ch
 Claude says it has it, works on it, asks a question if it needs to, and says what it changed. The robot shows each
 step to the person who sent it, within seconds.
 
-It was built for Place Intelligence's own apps, where it has carried hundreds of messages, and works in any web app.
+It has carried hundreds of messages in the apps it was built for, and works in any web app.
 
 ![The feedback robot's panel open over a page, with a note for Claude](docs/panel.png)
 
@@ -63,7 +63,7 @@ npm install -D github:obsidiandeep-ops/feedback-robot
 or from a packed file someone sent you (`npm pack` in this repository makes one):
 
 ```bash
-npm install -D ./placeintelligence-feedback-robot-0.1.0.tgz
+npm install -D ./obsidiandeep-feedback-robot-0.1.0.tgz
 ```
 
 Then, in your project's folder:
@@ -84,7 +84,7 @@ production unless you switch them on.
 
 ```ts
 // app/api/feedback-robot/[[...path]]/route.ts
-import { createNextRouteHandlers } from '@placeintelligence/feedback-robot/next';
+import { createNextRouteHandlers } from '@obsidiandeep/feedback-robot/next';
 export const runtime = 'nodejs';
 export const { GET, POST, OPTIONS } = createNextRouteHandlers();
 ```
@@ -92,7 +92,7 @@ export const { GET, POST, OPTIONS } = createNextRouteHandlers();
 ```tsx
 // app/FeedbackRobotDev.tsx, rendered at the end of app/layout.tsx's <body>
 'use client';
-import { FeedbackRobot } from '@placeintelligence/feedback-robot';
+import { FeedbackRobot } from '@obsidiandeep/feedback-robot';
 export function FeedbackRobotDev() {
     return process.env.NODE_ENV === 'production' ? null : <FeedbackRobot />;
 }
@@ -102,7 +102,7 @@ export function FeedbackRobotDev() {
 
 ```ts
 // vite.config.ts
-import { feedbackRobot } from '@placeintelligence/feedback-robot/vite';
+import { feedbackRobot } from '@obsidiandeep/feedback-robot/vite';
 export default defineConfig({ plugins: [react(), feedbackRobot()] });
 ```
 
@@ -114,7 +114,7 @@ export default defineConfig({ plugins: [react(), feedbackRobot()] });
 ### Express (or Connect, or plain `http`)
 
 ```js
-import { feedbackRobotMiddleware } from '@placeintelligence/feedback-robot/node';
+import { feedbackRobotMiddleware } from '@obsidiandeep/feedback-robot/node';
 app.use(feedbackRobotMiddleware());
 ```
 
@@ -185,7 +185,7 @@ WebGL maps (Mapbox GL, MapLibre) come out blank in a screenshot unless the robot
 Register each map and the robot photographs it, and also tells Claude the place under its hand:
 
 ```ts
-import { registerMapForCapture } from '@placeintelligence/feedback-robot';
+import { registerMapForCapture } from '@obsidiandeep/feedback-robot';
 map.on('load', () => registerMapForCapture(map));
 ```
 
@@ -260,4 +260,4 @@ npm run typecheck
 
 ## License
 
-MIT, © Place Intelligence.
+MIT, © Obsidian Deep.

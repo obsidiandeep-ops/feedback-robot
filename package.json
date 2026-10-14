@@ -1,9 +1,9 @@
 {
-    "name": "@placeintelligence/feedback-robot",
+    "name": "@obsidiandeep/feedback-robot",
     "version": "0.1.0",
     "description": "A green robot that floats over your web app while you build it. Drag its hand onto what you mean, write what should change, and the message (with a screenshot, the element and the console's errors) lands in your Claude Code chat. Claude answers through the robot.",
     "license": "MIT",
-    "author": "Place Intelligence",
+    "author": "Obsidian Deep <norion@obsidiandeep.ai>",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/obsidiandeep-ops/feedback-robot.git"

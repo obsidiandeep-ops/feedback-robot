@@ -1,7 +1,7 @@
 /**
  * The robot in any page, React app or not: mounts it in a container of its own at the end of <body>.
  *
- *   import { mountFeedbackRobot } from '@placeintelligence/feedback-robot/mount';
+ *   import { mountFeedbackRobot } from '@obsidiandeep/feedback-robot/mount';
  *   const unmount = mountFeedbackRobot({ endpoint: 'http://127.0.0.1:4545/api/feedback-robot' });
  */
 import { createRoot } from 'react-dom/client';

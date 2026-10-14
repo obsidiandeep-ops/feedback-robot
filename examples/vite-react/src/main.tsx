@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { FeedbackRobot } from '@placeintelligence/feedback-robot';
+import { FeedbackRobot } from '@obsidiandeep/feedback-robot';
 import App from './App';
 
 createRoot(document.getElementById('root')!).render(

@@ -1,7 +1,7 @@
 /**
  * The browser side: the robot itself, and the hook for maps.
  *
- *   import { FeedbackRobot } from '@placeintelligence/feedback-robot';
+ *   import { FeedbackRobot } from '@obsidiandeep/feedback-robot';
  *   <FeedbackRobot name="Alex" />
  */
 export { FeedbackRobot, type FeedbackRobotProps } from './FeedbackRobot';

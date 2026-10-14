@@ -2,7 +2,7 @@
  * Vite: the inbox on Vite's own dev server (never in a build).
  *
  *   // vite.config.ts
- *   import { feedbackRobot } from '@placeintelligence/feedback-robot/vite';
+ *   import { feedbackRobot } from '@obsidiandeep/feedback-robot/vite';
  *   export default defineConfig({ plugins: [react(), feedbackRobot()] });
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';

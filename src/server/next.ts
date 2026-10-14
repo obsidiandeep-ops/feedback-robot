@@ -2,7 +2,7 @@
  * Next.js (App Router): one catch-all route file.
  *
  *   // app/api/feedback-robot/[[...path]]/route.ts
- *   import { createNextRouteHandlers } from '@placeintelligence/feedback-robot/next';
+ *   import { createNextRouteHandlers } from '@obsidiandeep/feedback-robot/next';
  *   export const runtime = 'nodejs';
  *   export const { GET, POST, OPTIONS } = createNextRouteHandlers();
  */
