@@ -1,0 +1,79 @@
+{
+    "name": "@placeintelligence/feedback-robot",
+    "version": "0.1.0",
+    "description": "A green robot that floats over your web app while you build it. Drag its hand onto what you mean, write what should change, and the message (with a screenshot, the element and the console's errors) lands in your Claude Code chat. Claude answers through the robot.",
+    "license": "MIT",
+    "author": "Place Intelligence",
+    "type": "module",
+    "engines": {
+        "node": ">=18.17"
+    },
+    "bin": {
+        "feedback-robot": "dist/cli.js"
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/types/client/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./mount": {
+            "types": "./dist/types/client/mount.d.ts",
+            "import": "./dist/mount.js"
+        },
+        "./server": {
+            "types": "./dist/types/server/index.d.ts",
+            "import": "./dist/server/index.js"
+        },
+        "./next": {
+            "types": "./dist/types/server/next.d.ts",
+            "import": "./dist/server/next.js"
+        },
+        "./node": {
+            "types": "./dist/types/server/node.d.ts",
+            "import": "./dist/server/node.js"
+        },
+        "./vite": {
+            "types": "./dist/types/server/vite.d.ts",
+            "import": "./dist/server/vite.js"
+        },
+        "./feedback-robot.js": "./dist/feedback-robot.js"
+    },
+    "files": [
+        "dist",
+        "claude",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "build": "node scripts/build.mjs",
+        "typecheck": "tsc --noEmit",
+        "test": "tsx --test tests/*.test.ts",
+        "prepare": "node scripts/build.mjs"
+    },
+    "dependencies": {
+        "modern-screenshot": "^4.7.0",
+        "zod": "^3.25.0"
+    },
+    "peerDependencies": {
+        "react": ">=18",
+        "react-dom": ">=18"
+    },
+    "peerDependenciesMeta": {
+        "react": {
+            "optional": true
+        },
+        "react-dom": {
+            "optional": true
+        }
+    },
+    "devDependencies": {
+        "@types/node": "^22.15.0",
+        "@types/react": "^19.1.0",
+        "@types/react-dom": "^19.1.0",
+        "esbuild": "^0.28.2",
+        "react": "^19.2.0",
+        "react-dom": "^19.2.0",
+        "tsx": "^4.22.0",
+        "typescript": "^5.9.3"
+    }
+}

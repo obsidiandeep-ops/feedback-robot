@@ -1,0 +1,5 @@
+node_modules
+dist
+.feedback-robot/
+*.tgz
+.DS_Store
