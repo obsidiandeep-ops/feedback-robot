@@ -10,6 +10,21 @@
     },
     "homepage": "https://github.com/obsidiandeep-ops/feedback-robot#readme",
     "bugs": "https://github.com/obsidiandeep-ops/feedback-robot/issues",
+    "keywords": [
+        "claude-code",
+        "cursor",
+        "ai-agent",
+        "feedback",
+        "screenshot",
+        "design-review",
+        "dev-tools",
+        "react",
+        "nextjs",
+        "vite"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
     "type": "module",
     "engines": {
         "node": ">=18.17"
@@ -46,7 +61,7 @@
     },
     "files": [
         "dist",
-        "claude",
+        "plugin",
         "README.md",
         "LICENSE"
     ],
@@ -54,7 +69,8 @@
         "build": "node scripts/build.mjs",
         "typecheck": "tsc --noEmit",
         "test": "tsx --test tests/*.test.ts",
-        "prepare": "node scripts/build.mjs"
+        "prepare": "node scripts/build.mjs",
+        "prepublishOnly": "npm run typecheck && npm test"
     },
     "dependencies": {
         "modern-screenshot": "^4.7.0",

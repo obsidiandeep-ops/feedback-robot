@@ -419,8 +419,8 @@ async function init() {
         await fs.writeFile(ignore, `${had}${had && !had.endsWith('\n') ? '\n' : ''}# The feedback robot's inbox: messages and screenshots stay on this machine.\n${GITIGNORE_LINE}\n`);
         console.log(`Added ${GITIGNORE_LINE} to .gitignore (screenshots can show anything on screen).`);
     }
-    const skill = packageFile('claude', 'skills', 'feedback-robot', 'SKILL.md');
-    if (skill) {
+    const skill = packageFile('plugin', 'skills', 'feedback-robot', 'SKILL.md');
+    if (skill && !flag('no-skill')) {
         const to = path.join(root, '.claude', 'skills', 'feedback-robot', 'SKILL.md');
         await fs.mkdir(path.dirname(to), { recursive: true });
         await fs.copyFile(skill, to);
@@ -431,7 +431,7 @@ async function init() {
 }
 
 const usage =
-    'Usage: feedback-robot init | watch [--hours 12] | list [--all] | set <FB-n|PFB-n|id> <received|working|question|done> ["note"] | serve [--port 4545] [--host 127.0.0.1]\n' +
+    'Usage: feedback-robot init [--no-skill] | watch [--hours 12] | list [--all] | set <FB-n|PFB-n|id> <received|working|question|done> ["note"] | serve [--port 4545] [--host 127.0.0.1]\n' +
     '       Options: --dir <inbox>  --remote <https://app/api/feedback-robot>';
 
 try {

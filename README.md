@@ -52,21 +52,32 @@ Open http://127.0.0.1:4545/, drag the robot's hand onto something and send a not
 
 Messages and screenshots stay on your machine. Nothing is sent anywhere else.
 
-## Install
+## Install with your agent
 
-From a copy of this repository, until it's on npm:
+The quickest way: install the plugin, then let your agent add the robot to your app. It works out your stack, wires
+the robot in for development only, and checks it appears.
 
-```bash
-npm install -D github:obsidiandeep-ops/feedback-robot
+**Claude Code:**
+
+```
+/plugin marketplace add obsidiandeep-ops/feedback-robot
+/plugin install feedback-robot@obsidiandeep
+/feedback-robot:setup
 ```
 
-or from a packed file someone sent you (`npm pack` in this repository makes one):
+**Cursor:** install **feedback-robot** from the Cursor Marketplace in Customize, then ask the agent to "set up the
+feedback robot". (While the listing is in review, install by hand below.)
+
+The plugin also teaches the agent to watch for your messages and answer them; ask it to **watch the feedback robot**.
+
+## Install by hand
 
 ```bash
-npm install -D ./obsidiandeep-feedback-robot-0.1.0.tgz
+npm install -D @obsidiandeep/feedback-robot
 ```
 
-Then, in your project's folder:
+(or `npm install -D github:obsidiandeep-ops/feedback-robot` for the latest from GitHub). Then, in your project's
+folder:
 
 ```bash
 npx feedback-robot init

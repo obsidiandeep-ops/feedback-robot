@@ -1,0 +1,17 @@
+{
+    "name": "obsidiandeep",
+    "owner": {
+        "name": "Obsidian Deep",
+        "email": "norion@obsidiandeep.ai"
+    },
+    "metadata": {
+        "description": "Plugins from Obsidian Deep"
+    },
+    "plugins": [
+        {
+            "name": "feedback-robot",
+            "source": "plugin",
+            "description": "Point at your web app, say what should change, and it lands in your agent's chat with a screenshot. The agent answers through the robot."
+        }
+    ]
+}

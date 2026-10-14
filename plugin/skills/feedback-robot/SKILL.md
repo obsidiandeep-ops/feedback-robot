@@ -11,7 +11,7 @@ per message) with a screenshot and a close-up of what the hand was on.
 
 ## Watching
 
-Run the watcher **in the background** (Bash with `run_in_background`, never `&`):
+Run the watcher **as a background command** (in Claude Code, Bash with `run_in_background`; never append `&`):
 
 ```bash
 npx feedback-robot watch --hours 12

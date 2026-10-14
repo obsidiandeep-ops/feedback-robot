@@ -1,0 +1,15 @@
+{
+    "name": "obsidiandeep",
+    "description": "Plugins from Obsidian Deep",
+    "owner": {
+        "name": "Obsidian Deep",
+        "email": "norion@obsidiandeep.ai"
+    },
+    "plugins": [
+        {
+            "name": "feedback-robot",
+            "source": "./plugin",
+            "description": "Point at your web app, say what should change, and it lands in Claude Code with a screenshot. Claude answers through the robot."
+        }
+    ]
+}
