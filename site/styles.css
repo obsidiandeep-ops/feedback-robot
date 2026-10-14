@@ -113,6 +113,14 @@ h3 { font-size: 19px; margin: 0 0 8px; }
 }
 .private { color: var(--soft); font-size: 15px; margin-top: 24px; }
 
+.about-card {
+    max-width: 720px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 28px;
+}
+.about-card h3 { font-size: 22px; margin-bottom: 4px; }
+.about-role { color: var(--green-deep); font-weight: 600; font-size: 14px; margin: 0 0 16px; }
+.about-card p { color: var(--soft); }
+.about-card .button { margin-top: 8px; font-size: 15px; padding: 10px 18px; }
+
 footer {
     display: flex; justify-content: space-between; padding-top: 28px; padding-bottom: 40px;
     border-top: 1px solid var(--line); color: var(--soft); font-size: 14px;
