@@ -62,6 +62,26 @@ test('the sync and status routes open with the key and nothing else', async () =
     assert.equal((await handle(new Request(`${BASE}/${item.id}/shot?name=screen`, { headers: { authorization: `Bearer ${KEY}` } }))).status, 200);
 });
 
+test('other websites can neither post into a local inbox nor read it back', async () => {
+    const handle = createFeedbackHandler({ dir: tempInbox(), enabled: true, cors: 'loopback' });
+    // A form or no-cors fetch from another site: text/plain, cross-site.
+    const forged = new Request(BASE, { method: 'POST', headers: { 'content-type': 'text/plain', origin: 'https://evil.example', 'sec-fetch-site': 'cross-site' }, body: JSON.stringify(message()) });
+    assert.equal((await handle(forged)).status, 403);
+    assert.equal((await handle(post(BASE, message(), { 'sec-fetch-site': 'cross-site' }))).status, 403, 'cross-site without an Origin');
+    assert.equal((await handle(new Request(BASE, { method: 'POST', body: JSON.stringify(message()) }))).status, 415, 'not JSON');
+    // DNS rebinding: a foreign host name pointing at this machine.
+    assert.equal((await handle(new Request('http://attacker.example:3000/api/feedback-robot'))).status, 403);
+    assert.equal((await handle(new Request(BASE), { remoteAddress: '203.0.113.9' })).status, 403, 'another machine');
+    // The robot itself: same origin, a localhost page on another port, and a picture opened in a new tab.
+    assert.equal((await handle(post(BASE, message(), { origin: 'http://localhost:3000', 'sec-fetch-site': 'same-origin' }), { remoteAddress: '127.0.0.1' })).status, 201);
+    assert.equal((await handle(post(BASE, message(), { origin: 'http://127.0.0.1:5173', 'sec-fetch-site': 'cross-site' }))).status, 201);
+    const list = (await (await handle(new Request(BASE))).json()) as { items: Array<{ id: string }> };
+    assert.equal((await handle(new Request(`${BASE}/${list.items[0].id}/shot?name=screen`, { headers: { 'sec-fetch-site': 'cross-site', 'sec-fetch-mode': 'navigate' } }))).status, 200);
+    // allowedHosts opens it to a LAN address.
+    const lan = createFeedbackHandler({ dir: tempInbox(), enabled: true, allowedHosts: ['192.168.1.20'] });
+    assert.equal((await lan(new Request('http://192.168.1.20:3000/api/feedback-robot'), { remoteAddress: '192.168.1.31' })).status, 200);
+});
+
 test('CORS for the standalone server: localhost origins only, and a rate limit per sender', async () => {
     const handle = createFeedbackHandler({ dir: tempInbox(), enabled: true, cors: 'loopback', perHour: 2 });
     const pre = await handle(new Request(BASE, { method: 'OPTIONS', headers: { origin: 'http://localhost:5173' } }));

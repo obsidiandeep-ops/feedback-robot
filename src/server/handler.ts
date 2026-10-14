@@ -39,6 +39,17 @@ export interface FeedbackHandlerOptions {
     perHour?: number;
     /** Origins allowed to call from another origin (the robot on a page served elsewhere): 'loopback' allows any localhost port. */
     cors?: 'loopback' | string[];
+    /**
+     * Without `author`, every request counts as you, so the inbox answers only requests to localhost from this
+     * machine. List other host names here (a LAN address, to try the app on a phone) to open it to them too.
+     */
+    allowedHosts?: string[];
+}
+
+/** What the server knows about a request beyond the Request itself. */
+export interface RequestInfo {
+    /** The peer's IP address, when the server can tell (Node's req.socket.remoteAddress). */
+    remoteAddress?: string;
 }
 
 const LOCAL_AUTHOR: FeedbackAuthor = { id: 'local', name: 'You' };
@@ -54,8 +65,18 @@ function sameKey(given: string, key: string): boolean {
 }
 
 const LOOPBACK = /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+const LOOPBACK_HOST = /^(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
+const LOOPBACK_ADDRESS = /^(127\.|::1$|::ffff:127\.)/;
 
-export function createFeedbackHandler(opts: FeedbackHandlerOptions = {}): (req: Request) => Promise<Response> {
+function hostOf(origin: string): string | null {
+    try {
+        return new URL(origin).host.toLowerCase();
+    } catch {
+        return null;
+    }
+}
+
+export function createFeedbackHandler(opts: FeedbackHandlerOptions = {}): (req: Request, info?: RequestInfo) => Promise<Response> {
     const production = process.env.NODE_ENV === 'production';
     const enabled = opts.enabled ?? !production;
     if (enabled && production && !opts.author)
@@ -69,11 +90,11 @@ export function createFeedbackHandler(opts: FeedbackHandlerOptions = {}): (req: 
     const authorOf = opts.author ?? (() => LOCAL_AUTHOR);
     const sent = new Map<string, number[]>();
 
+    const corsAllows = (origin: string): boolean => !!opts.cors && (opts.cors === 'loopback' ? LOOPBACK.test(origin) : opts.cors.includes(origin));
+
     const corsHeaders = (req: Request): Record<string, string> => {
         const origin = req.headers.get('origin');
-        if (!origin || !opts.cors) return {};
-        const allowed = opts.cors === 'loopback' ? LOOPBACK.test(origin) : opts.cors.includes(origin);
-        if (!allowed) return {};
+        if (!origin || !corsAllows(origin)) return {};
         return { 'Access-Control-Allow-Origin': origin, Vary: 'Origin', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type, Authorization', 'Access-Control-Max-Age': '600' };
     };
 
@@ -92,9 +113,34 @@ export function createFeedbackHandler(opts: FeedbackHandlerOptions = {}): (req: 
         return false;
     };
 
-    return async (req: Request): Promise<Response> => {
+    /**
+     * Who may reach the inbox at all, before any route. Other websites the developer visits must not be able to post
+     * into it (each message becomes instructions for an agent with a shell) or read it back, including through DNS
+     * rebinding, where a foreign host name points at 127.0.0.1.
+     */
+    const refusal = (req: Request, url: URL, info?: RequestInfo): [number, string] | null => {
+        const host = (req.headers.get('host') ?? url.host).toLowerCase();
+        if (!opts.author) {
+            const extra = opts.allowedHosts ?? [];
+            if (!LOOPBACK_HOST.test(host) && !extra.includes(host.replace(/:\d+$/, ''))) return [403, 'This inbox only answers on localhost'];
+            if (!extra.length && info?.remoteAddress && !LOOPBACK_ADDRESS.test(info.remoteAddress)) return [403, 'This inbox only answers this machine'];
+        }
+        const origin = req.headers.get('origin');
+        const ownOrigin = origin !== null && (hostOf(origin) === host || corsAllows(origin));
+        if (origin !== null && !ownOrigin) return [403, 'Requests from other sites are refused'];
+        // A link to a picture opened in a new tab is a navigation (no Origin); the opening page can't read it.
+        const navigation = req.method === 'GET' && req.headers.get('sec-fetch-mode') === 'navigate';
+        if (req.headers.get('sec-fetch-site') === 'cross-site' && !ownOrigin && !navigation) return [403, 'Requests from other sites are refused'];
+        // JSON can't be sent across sites without a CORS preflight, which other sites fail.
+        if (req.method === 'POST' && !(req.headers.get('content-type') ?? '').toLowerCase().startsWith('application/json')) return [415, 'Send the message as JSON'];
+        return null;
+    };
+
+    return async (req: Request, info?: RequestInfo): Promise<Response> => {
         const url = new URL(req.url);
         if (!enabled || !(url.pathname === base || url.pathname.startsWith(`${base}/`))) return json({ error: 'Not found' }, 404);
+        const refused = refusal(req, url, info);
+        if (refused) return json({ error: refused[1] }, refused[0]);
         const cors = corsHeaders(req);
         if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
         const rest = url.pathname.slice(base.length).replace(/^\/+/, '').split('/').filter(Boolean);

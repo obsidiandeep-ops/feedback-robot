@@ -53,7 +53,7 @@ export function feedbackRobotMiddleware(opts: FeedbackHandlerOptions = {}) {
             const host = req.headers.host ?? 'localhost';
             const headers = new Headers();
             for (const [k, v] of Object.entries(req.headers)) if (typeof v === 'string') headers.set(k, v);
-            const response = await handle(new Request(`http://${host}${path}`, { method, headers, body: body && body.length ? new Uint8Array(body) : undefined }));
+            const response = await handle(new Request(`http://${host}${path}`, { method, headers, body: body && body.length ? new Uint8Array(body) : undefined }), { remoteAddress: req.socket?.remoteAddress });
             res.statusCode = response.status;
             response.headers.forEach((value, key) => res.setHeader(key, value));
             res.end(Buffer.from(await response.arrayBuffer()));
