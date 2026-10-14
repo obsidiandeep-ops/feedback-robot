@@ -13,6 +13,33 @@ step to the person who sent it, within seconds.
 
 It was built for Place Intelligence's own apps, where it has carried hundreds of messages, and works in any web app.
 
+![The feedback robot's panel open over a page, with a note for Claude](docs/panel.png)
+
+## Why
+
+Telling an AI what's wrong with a screen usually means taking a screenshot, cropping it, pasting it into the chat,
+and describing where on the page you mean ("the blue button in the second card, under the heading"). Then you
+switch back to the app, find the next thing, and do it all again.
+
+The robot cuts that to one move. You point at the thing, say what should change, and keep going. Claude gets the
+picture, the exact element, the components it comes from and any errors on the page, so it can usually go straight
+to the right file. You can send ten notes in a row while Claude works through them, and see each one go from
+received to done without leaving the app.
+
+It also works for people who don't use Claude Code: a designer or client clicking through a staging site can point
+and write, and the notes reach the developer's Claude chat (see [A deployed app](#a-deployed-app-staging-or-production-for-your-team)).
+
+## Try it in a minute
+
+```bash
+git clone https://github.com/obsidiandeep-ops/feedback-robot.git
+cd feedback-robot && npm install
+node dist/cli.js serve
+```
+
+Open http://127.0.0.1:4545/, drag the robot's hand onto something and send a note. In another terminal,
+`node dist/cli.js watch` prints the message as Claude would see it.
+
 ```
  your app (browser)                     your machine                          Claude Code
 ┌────────────────────┐   POST       ┌──────────────────────────┐   watch   ┌─────────────────────────┐
@@ -30,7 +57,7 @@ Messages and screenshots stay on your machine. Nothing is sent anywhere else.
 From a copy of this repository, until it's on npm:
 
 ```bash
-npm install -D github:<owner>/feedback-robot
+npm install -D github:obsidiandeep-ops/feedback-robot
 ```
 
 or from a packed file someone sent you (`npm pack` in this repository makes one):

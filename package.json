@@ -4,6 +4,12 @@
     "description": "A green robot that floats over your web app while you build it. Drag its hand onto what you mean, write what should change, and the message (with a screenshot, the element and the console's errors) lands in your Claude Code chat. Claude answers through the robot.",
     "license": "MIT",
     "author": "Place Intelligence",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/obsidiandeep-ops/feedback-robot.git"
+    },
+    "homepage": "https://github.com/obsidiandeep-ops/feedback-robot#readme",
+    "bugs": "https://github.com/obsidiandeep-ops/feedback-robot/issues",
     "type": "module",
     "engines": {
         "node": ">=18.17"
