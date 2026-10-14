@@ -70,7 +70,8 @@
         "typecheck": "tsc --noEmit",
         "test": "tsx --test tests/*.test.ts",
         "prepare": "node scripts/build.mjs",
-        "prepublishOnly": "npm run typecheck && npm test"
+        "prepublishOnly": "npm run typecheck && npm test",
+        "site": "node scripts/build.mjs && cp dist/feedback-robot.js plugin/assets/logo.svg site/"
     },
     "dependencies": {
         "modern-screenshot": "^4.7.0",

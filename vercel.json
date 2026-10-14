@@ -1,0 +1,5 @@
+{
+    "buildCommand": "npm run site",
+    "outputDirectory": "site",
+    "cleanUrls": true
+}

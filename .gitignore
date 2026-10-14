@@ -3,3 +3,6 @@ dist
 .feedback-robot/
 *.tgz
 .DS_Store
+site/feedback-robot.js
+site/logo.svg
+.vercel
