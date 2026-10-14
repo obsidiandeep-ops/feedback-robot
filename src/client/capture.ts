@@ -100,45 +100,138 @@ function outline(ctx: CanvasRenderingContext2D, box: Box, scale: number, label: 
     ctx.restore();
 }
 
-/** Screenshot the window. `target` is the pointed-at part in window coordinates; `limits` the server's (ShotLimits). */
+/** The attribute that marks, for the clone, where a pinned element is drawn (pinScrolled). */
+const PIN = 'data-shot-pin';
+
+/** Whether an element's fixed position is against the window: no ancestor makes a containing block of its own. */
+function fixedToWindow(el: Element): boolean {
+    for (let a = el.parentElement; a && a !== document.documentElement; a = a.parentElement) {
+        const s = getComputedStyle(a);
+        if (s.transform !== 'none' || s.filter !== 'none' || s.perspective !== 'none' || /paint|layout|strict|content/.test(s.contain) || /transform|filter|perspective/.test(s.willChange)) return false;
+    }
+    return true;
+}
+
+/**
+ * A scrolled page is drawn from its top and moved up by the scroll, so what is pinned to the window (position fixed)
+ * or stuck to its top (sticky: the report's tool bar) would move away with it. Each is marked with where the person
+ * sees it, and drawn there in the clone (pinnedInClone): fixed ones at their place in the window, sticky ones offset
+ * from where they would sit unstuck. Returns the function that takes the marks off again. Nothing moves on the page:
+ * a sticky element is measured unstuck and put back within one task, before the browser paints.
+ */
+function pinScrolled(sx: number, sy: number): () => void {
+    if (!sx && !sy) return () => undefined;
+    const marked: Element[] = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_ELEMENT);
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) {
+        const el = n as HTMLElement;
+        if (el.closest('[data-feedback-bot]')) continue;
+        const s = getComputedStyle(el);
+        if (s.position !== 'fixed' && s.position !== 'sticky') continue;
+        const box = el.getBoundingClientRect();
+        if (box.width < 1 || box.height < 1 || box.bottom < 0 || box.top > window.innerHeight) continue;
+        if (s.position === 'fixed') {
+            if (!fixedToWindow(el)) continue;
+            el.setAttribute(PIN, `fixed,${box.left + sx},${box.top + sy},${box.width},${box.height}`);
+        } else {
+            const was = el.style.getPropertyValue('position');
+            const priority = el.style.getPropertyPriority('position');
+            el.style.setProperty('position', 'static', 'important');
+            const unstuck = el.getBoundingClientRect();
+            if (was) el.style.setProperty('position', was, priority);
+            else el.style.removeProperty('position');
+            const dx = box.left - unstuck.left;
+            const dy = box.top - unstuck.top;
+            if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue;
+            el.setAttribute(PIN, `sticky,${dx},${dy}`);
+        }
+        marked.push(el);
+    }
+    return () => marked.forEach((el) => el.removeAttribute(PIN));
+}
+
+/** In the clone, a marked element drawn where the person sees it (pinScrolled), and the mark taken off. */
+export function pinnedInClone(cloned: Node): void {
+    const el = cloned as HTMLElement;
+    if (typeof el.getAttribute !== 'function') return;
+    const mark = el.getAttribute(PIN);
+    if (!mark) return;
+    el.removeAttribute(PIN);
+    const [kind, ...nums] = mark.split(',');
+    const [a, b, w, h] = nums.map(Number);
+    const set = (name: string, value: string) => el.style.setProperty(name, value, 'important');
+    if (kind === 'fixed') {
+        // Against the page drawn from its top (the clone's body, moved up by the scroll): where it is in the window, plus the scroll.
+        set('left', `${a}px`);
+        set('top', `${b}px`);
+        set('right', 'auto');
+        set('bottom', 'auto');
+        set('width', `${w}px`);
+        set('height', `${h}px`);
+        set('margin', '0');
+        set('transform', 'none');
+    } else {
+        // Where it would sit unstuck, moved as far as it is stuck.
+        set('position', 'relative');
+        set('left', `${a}px`);
+        set('top', `${b}px`);
+        set('right', 'auto');
+        set('bottom', 'auto');
+    }
+}
+
+/**
+ * Screenshot the window. `target` is the pointed-at part in window coordinates; `limits` the server's (ShotLimits).
+ *
+ * Only the window is drawn: the page from its top, moved up and left by the scroll, on a canvas the window's size. A
+ * long page drawn whole (a 35-page report is about 40,000 px tall) asked for a canvas past the browser's limits, which
+ * comes back blank, so the robot would send the background colour with its outline on it.
+ */
 export async function captureWindow(target: Box | null, label: string | null, limits?: { screen: number; focus: number } | null): Promise<Shots> {
     const budget = urlBudget(limits);
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const scale = scaleFor(vw, vh);
-    // Full-screen pages position everything against the window, so <body> can measure 0 px tall:
-    // render at least the window's size (and the whole page where it scrolls).
+    // Full-screen pages position everything against the window, so <body> can measure 0 px tall: lay it out at least
+    // the window's size (and the whole page where it scrolls), so everything sits where it does on screen.
     const fullW = Math.max(vw, document.documentElement.scrollWidth, document.body.scrollWidth);
     const fullH = Math.max(vh, document.documentElement.scrollHeight, document.body.scrollHeight);
+    const sx = Math.max(0, Math.round(window.scrollX));
+    const sy = Math.max(0, Math.round(window.scrollY));
+    const background = getComputedStyle(document.body).backgroundColor || '#0d0e13';
     const thaw = await freezeMaps();
+    const unpin = pinScrolled(sx, sy);
     let page: HTMLCanvasElement;
     try {
         page = await domToCanvas(document.body, {
             scale,
-            width: fullW,
-            height: fullH,
-            style: { margin: '0', width: `${fullW}px`, height: `${fullH}px` },
-            backgroundColor: getComputedStyle(document.body).backgroundColor || '#0d0e13',
+            width: vw,
+            height: vh,
+            style: { margin: '0', width: `${fullW}px`, height: `${fullH}px`, transform: `translate(${-sx}px, ${-sy}px)`, transformOrigin: '0 0' },
+            backgroundColor: background,
             filter: (node) => !(node instanceof Element && node.closest('[data-feedback-bot]')),
-            // Dropdowns show what is chosen, not their first option.
-            onCloneEachNode: showChosenOption,
+            // Dropdowns show what is chosen, not their first option; what is pinned
+            // to the window stays where the person sees it.
+            onCloneEachNode: (cloned) => {
+                showChosenOption(cloned);
+                pinnedInClone(cloned);
+            },
             features: { restoreScrollPosition: true },
             timeout: 20_000,
         });
     } finally {
+        unpin();
         thaw();
     }
     if (!page.width || !page.height) throw new Error('The screenshot came out empty. Untick “Include a screenshot” to send without one.');
-    // The window's part of the page (the whole page when it doesn't scroll).
-    const sx = Math.round(window.scrollX * scale);
-    const sy = Math.round(window.scrollY * scale);
+    // On the page's background, so nothing left transparent turns black.
     const screen = document.createElement('canvas');
-    screen.width = Math.round(vw * scale);
-    screen.height = Math.round(vh * scale);
+    screen.width = page.width;
+    screen.height = page.height;
     const ctx = screen.getContext('2d')!;
-    ctx.fillStyle = getComputedStyle(document.body).backgroundColor || '#0d0e13';
+    ctx.fillStyle = background;
     ctx.fillRect(0, 0, screen.width, screen.height);
-    ctx.drawImage(page, sx, sy, screen.width, screen.height, 0, 0, screen.width, screen.height);
+    ctx.drawImage(page, 0, 0);
 
     // The close-up is cut before the outline is drawn, with some of the surroundings.
     let focus: string | null = null;
